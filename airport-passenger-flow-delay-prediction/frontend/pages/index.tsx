@@ -92,3 +92,27 @@ function RecentPredictionsTable({ predictions }) {
     </div>
   );
 }
+
+export async function getServerSideProps() {
+  // Replace with your actual API endpoints
+  const [passengerRes, delayRes, statsRes] = await Promise.all([
+    fetch('http://localhost:8000/api/passenger-flow/'),
+    fetch('http://localhost:8000/api/flight-delay/'),
+    fetch('http://localhost:8000/api/dashboard-stats/'),
+  ]);
+  const passengerFlowData = await passengerRes.json();
+  const delayPredictionData = await delayRes.json();
+  const stats = await statsRes.json();
+
+  return {
+    props: {
+      passengerStats: stats.passengerStats,
+      flightStats: stats.flightStats,
+      waitTime: stats.waitTime,
+      delayStats: stats.delayStats,
+      passengerFlowData,
+      delayPredictionData,
+      recentPredictions: stats.recentPredictions,
+    },
+  };
+}
