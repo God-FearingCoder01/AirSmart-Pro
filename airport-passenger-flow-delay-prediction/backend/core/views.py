@@ -19,3 +19,7 @@ class PassengerFlowViewSet(viewsets.ModelViewSet):
 class FlightDelayViewSet(viewsets.ModelViewSet):
     queryset = FlightDelay.objects.all()
     serializer_class = FlightDelaySerializer
+
+class DashboardStatsView(APIView):
+    def get(self, request):
+        return Response({"message": "Dashboard stats endpoint"})
