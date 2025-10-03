@@ -25,8 +25,14 @@ const DelayPredictionChart = ({ data }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get('/api/delay-predictions');
+                const response = await axios.get('http://localhost:8000/api/delay-predictions');
                 const data = response.data;
+
+                if (!Array.isArray(data)) {
+                console.error('Unexpected data format:', data);
+                return; // or show an error state
+}
+
 
                 const labels = data.map(item => item.date);
                 const values = data.map(item => item.predicted_delay);

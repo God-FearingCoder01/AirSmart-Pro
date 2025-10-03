@@ -1,29 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { Line } from 'react-chartjs-2';
+import { Line } from "react-chartjs-2";
 
 const PassengerFlowChart = ({ data }) => {
-    if (!data) {
-        return <p>No data available</p>;
-    }
+  if (!Array.isArray(data) || data.length === 0) {
+    return <p>No passenger flow data available</p>;
+  }
 
-    const chartData = {
-        labels: data.map((item: { time: any; }) => item.time), // Assuming data has a 'time' field
-        datasets: [
-            {
-                label: 'Passenger Flow',
-                data: data.map((item: { passengerCount: any; }) => item.passengerCount), // Assuming data has a 'passengerCount' field
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                fill: true,
-            },
-        ],
-    };
+  const chartData = {
+    labels: data.map((item) => item.time), // ✅ safe now
+    datasets: [
+      {
+        label: "Passenger Flow",
+        data: data.map((item) => item.passengerCount),
+        borderColor: "rgba(75, 192, 192, 1)",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        fill: true,
+      },
+    ],
+  };
 
-    return (
-        <div>
-            <Line data={chartData} />
-        </div>
-    );
+  return <Line data={chartData} />;
 };
 
 export default PassengerFlowChart;
