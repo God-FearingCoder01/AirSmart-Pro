@@ -1,10 +1,24 @@
 from django.contrib import admin
 from django.urls import path, include
-from core.views import PassengerFlowView, FlightDelayPredictionView
+from django.http import JsonResponse
+
+def root_view(request):
+    return JsonResponse({
+        "message": "Welcome to the Airport API 🚀",
+        "available_endpoints": [
+            "/api/dashboard-stats/",
+            "/api/delay-predictions/",
+            "/api/passenger-flow/",
+            "/health/",
+        ]
+    })
+
+def health_check_view(request):
+    return JsonResponse({"status": "ok"})
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('core.urls')),
-    path('passenger-flow/', PassengerFlowView.as_view(), name='passenger_flow'),
-    path('flight-delay/', FlightDelayPredictionView.as_view(), name='flight_delay'),
+    path("", root_view),
+    path("admin/", admin.site.urls),
+    path("api/", include("core.urls")),
+    path("health/", health_check_view),
 ]

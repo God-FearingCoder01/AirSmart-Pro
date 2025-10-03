@@ -1,8 +1,24 @@
 from django.urls import path
-from . import views
+from .views import (
+    DashboardStatsView,
+    FlightDelayPredictionView,
+    PassengerFlowView,
+)
+from django.http import JsonResponse 
+
+def api_root_view(request):
+    return JsonResponse({
+        "message": "Welcome to the Airport API 🚀",
+        "available_endpoints": {
+            "dashboard-stats": "/api/dashboard-stats/",
+            "delay-predictions": "/api/delay-predictions/",
+            "passenger-flow": "/api/passenger-flow/",
+        }
+    })
 
 urlpatterns = [
-    path('passenger-flow/', views.PassengerFlowView.as_view(), name='passenger_flow'),
-    path('flight-delay/', views.FlightDelayPredictionView.as_view(), name='flight_delay'),
-    path('dashboard-stats/', views.DashboardStatsView.as_view(), name='dashboard_stats'),
+    path("", api_root_view),
+    path("dashboard-stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
+    path("delay-predictions/", FlightDelayPredictionView.as_view(), name="delay-predictions"),
+    path("passenger-flow/", PassengerFlowView.as_view(), name="passenger-flow"),
 ]

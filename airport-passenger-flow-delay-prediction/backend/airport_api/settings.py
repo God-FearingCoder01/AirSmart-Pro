@@ -1,3 +1,5 @@
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # Use 'django.db.backends.mysql' for MySQL
@@ -83,4 +85,15 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for CORS, adjust as needed for production
+# CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for CORS, adjust as needed for production
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React frontend
+    "http://192.168.1.69:3000",  # React frontend
+]
+
+DEBUG = True  # Set to False in production
+
+SECRET_KEY = os.getenv("SECRET_KEY", "qna*2_t$q)$*kj749upwngja6h@nxb2vh35+)7hzp9&#ez")
+if not SECRET_KEY:
+    raise ValueError("The SECRET_KEY environment variable is not set.")

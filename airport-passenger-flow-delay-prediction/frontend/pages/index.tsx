@@ -1,43 +1,43 @@
-import Layout from "../components/Layout";
 import PassengerFlowChart from "../components/PassengerFlowChart";
 import DelayPredictionChart from "../components/DelayPredictionChart";
 
 export default function Home({ passengerStats, flightStats, waitTime, delayStats, passengerFlowData, delayPredictionData, recentPredictions }) {
   return (
-    <Layout>
-      {/* Dashboard Header */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Airport Dashboard</h2>
-        <p className="text-gray-600">Real-time passenger flow and flight delay predictions</p>
-      </div>
+    <>
+    {/* Dashboard Header */}
+    <div className="mb-8">
+      {/* <img src="/ACZ_Logo.ico" alt="Airport Logo" /> */}
+      <h2 className="text-3xl font-bold text-gray-800 mb-2">Airport Dashboard</h2>
+      <p className="text-gray-600">Real-time passenger flow and flight delay predictions</p>
+    </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <DashboardCard title="Current Passengers" value={passengerStats.count} change="+12% from yesterday" icon="users" color="green" />
-        <DashboardCard title="Active Flights" value={flightStats.count} change={`On-time: ${flightStats.onTimePercent}%`} icon="plane" color="blue" />
-        <DashboardCard title="Avg. Wait Time" value={`${waitTime.value} min`} change={waitTime.change} icon="clock" color="yellow" />
-        <DashboardCard title="Delay Predictions" value={delayStats.count} change={delayStats.confidence} icon="alert-triangle" color="red" />
-      </div>
+    {/* Stats Overview */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <DashboardCard title="Current Passengers" value={passengerStats.count} change="+12% from yesterday" icon="users" color="green" />
+      <DashboardCard title="Active Flights" value={flightStats.count} change={`On-time: ${flightStats.onTimePercent}%`} icon="plane" color="blue" />
+      <DashboardCard title="Avg. Wait Time" value={`${waitTime.value} min`} change={waitTime.change} icon="clock" color="yellow" />
+      <DashboardCard title="Delay Predictions" value={delayStats.count} change={delayStats.confidence} icon="alert-triangle" color="red" />
+    </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div className="dashboard-card bg-white rounded-xl p-6 shadow">
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Passenger Flow Prediction</h3>
-          <div className="h-80">
-            <PassengerFlowChart data={passengerFlowData} />
-          </div>
-        </div>
-        <div className="dashboard-card bg-white rounded-xl p-6 shadow">
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Flight Delay Predictions</h3>
-          <div className="h-80">
-            <DelayPredictionChart data={delayPredictionData} />
-          </div>
+    {/* Charts Section */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div className="dashboard-card bg-white rounded-xl p-6 shadow">
+        <h3 className="text-lg font-semibold text-gray-800 mb-6">Passenger Flow Prediction</h3>
+        <div className="h-80">
+          <PassengerFlowChart data={passengerFlowData} />
         </div>
       </div>
+      <div className="dashboard-card bg-white rounded-xl p-6 shadow">
+        <h3 className="text-lg font-semibold text-gray-800 mb-6">Flight Delay Predictions</h3>
+        <div className="h-80">
+          <DelayPredictionChart data={delayPredictionData} />
+        </div>
+      </div>
+    </div>
 
-      {/* Recent Predictions Table */}
-      <RecentPredictionsTable predictions={recentPredictions} />
-    </Layout>
+    {/* Recent Predictions Table */}
+    <RecentPredictionsTable predictions={recentPredictions} />
+    </>
   );
 }
 
@@ -50,9 +50,9 @@ function DashboardCard({ title, value, change, icon, color }) {
         <h3 className="text-3xl font-bold text-gray-800 mt-2">{value}</h3>
         <p className={`text-${color}-500 text-sm mt-1`}>{change}</p>
       </div>
-      <div className={`bg-${color}-100 p-3 rounded-lg`}>
-        {/* Replace with your icon system or SVG */}
-        <span className={`text-${color}-600`}>{icon}</span>
+      <div className={`bg-${color}-100 p-3 rounded-lg flex items-center justify-center`} style={{ width: 48, height: 48 }}>
+        <img src={`../components/${icon}.ico`} alt="" />
+        <span className={`text-${color}-600 text-2xl`}>{icon}</span>
       </div>
     </div>
   );
@@ -93,26 +93,60 @@ function RecentPredictionsTable({ predictions }) {
   );
 }
 
-export async function getServerSideProps() {
-  // Replace with your actual API endpoints
-  const [passengerRes, delayRes, statsRes] = await Promise.all([
-    fetch('http://localhost:8000/api/passenger-flow/'),
-    fetch('http://localhost:8000/api/flight-delay/'),
-    fetch('http://localhost:8000/api/dashboard-stats/'),
-  ]);
-  const passengerFlowData = await passengerRes.json();
-  const delayPredictionData = await delayRes.json();
-  const stats = await statsRes.json();
 
-  return {
-    props: {
-      passengerStats: stats.passengerStats,
-      flightStats: stats.flightStats,
-      waitTime: stats.waitTime,
-      delayStats: stats.delayStats,
-      passengerFlowData,
-      delayPredictionData,
-      recentPredictions: stats.recentPredictions,
-    },
-  };
+export async function getServerSideProps() {
+  try {
+    const [passengerRes, delayRes, statsRes] = await Promise.all([
+      fetch("http://localhost:8000/api/passenger-flow/", {
+        headers: { Accept: "application/json" },
+      }),
+      fetch("http://localhost:8000/api/delay-predictions/", {
+        headers: { Accept: "application/json" },
+      }),
+      fetch("http://localhost:8000/api/dashboard-stats/", {
+        headers: { Accept: "application/json" },
+      }),
+    ]);
+
+    const [passengerFlowDataRaw, delayPredictionData, passengerStatsData] =
+      await Promise.all([
+        passengerRes.json(),
+        delayRes.json(),
+        statsRes.json(),
+      ]);
+
+    const { passengerStats, flightStats, waitTime, delayStats, recentPredictions } =
+      passengerStatsData;
+
+    return {
+      props: {
+        passengerFlowData: Array.isArray(passengerFlowDataRaw)
+          ? passengerFlowDataRaw
+          : [], // ✅ guarantee array
+        delayPredictionData: Array.isArray(delayPredictionData)
+          ? delayPredictionData
+          : [],
+        passengerStats,
+        flightStats,
+        waitTime,
+        delayStats,
+        recentPredictions: Array.isArray(recentPredictions)
+          ? recentPredictions
+          : [],
+      },
+    };
+  } catch (err) {
+    console.error("Error in getServerSideProps:", err);
+    return {
+      props: {
+        passengerFlowData: [],
+        delayPredictionData: [],
+        passengerStats: { count: 0 },
+        flightStats: { count: 0, onTimePercent: 0 },
+        waitTime: { value: 0, change: "" },
+        delayStats: { count: 0, confidence: "" },
+        recentPredictions: [],
+      },
+    };
+  }
 }
