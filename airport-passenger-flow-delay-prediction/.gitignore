@@ -1,13 +1,8 @@
 node_modules/
-frontend/node_modules/
 .next/
 .env
-frontend/.env
-frontend/.next/
-pycache/
 __pycache__/
 *.pyc
-backend/__pycache__/
-backend/*.pyc
-backend/airport_api/__pycache__/
-backend/airport_api/*.pyc
+*.pyo
+*.pyd
+C:\Users\GFC01\Documents\APFDS\airport-passenger-flow-delay-prediction\backend\airport_api\settings.py
