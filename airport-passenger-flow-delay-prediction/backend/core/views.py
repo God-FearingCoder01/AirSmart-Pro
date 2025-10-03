@@ -6,6 +6,41 @@ import pandas as pd
 import xgboost as xgb
 import numpy as np
 from sqlalchemy import create_engine   # Make sure SQLAlchemy is installed
+from django.contrib.auth.models import User
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
+from rest_framework import status
+
+@api_view(["POST"])
+def signup_view(request):
+    """Create a new user with is_active=False (pending approval)."""
+    username = request.data.get("username")
+    password = reqest.data.get("password")
+    email = request.data.get("email")
+
+    if User.objects.filter(username=username).exists():
+        return Response({"error": "Username already exists"}, status=400)
+
+    user = User.objects.create_user(username=username, password=password, email=email)
+    user.is_active = False # require admin approval
+    user.save()
+
+    return Response({"message": "Account create. Awaiting admin approval."}, status=201)
+
+@api_view(["POST"])
+@permission_classes([IsAdminUser])
+def approve_user_view(request, user_id):
+    """Admin approves user (activates account)."""
+    try:
+        user = User.objects.get(id=user_id, is_active=False)
+        user.is_active = True
+        user.save()
+        return Response({"mesaage": f"User {user.username} approved."})
+    except User.DoesNotExit:
+        return Response({"error": "User not found or already active"}, status=404)
+
+def welcome_view():
+    return Response({"message": "Welcome to AirFlow Pro API"})
 
 class DashboardStatsView(APIView):
     def get(self, request):
