@@ -78,6 +78,8 @@ REST_FRAMEWORK = {
     )
 }
 
+AUTH_USER_MODEL = "core.CustomUser"
+
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
