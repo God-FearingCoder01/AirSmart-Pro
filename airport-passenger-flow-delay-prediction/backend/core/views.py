@@ -13,6 +13,9 @@ from rest_framework import status
 from rest_framework import generics
 from .models import CustomUser
 from .serializers import UserSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from res_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.exceptions import AuthenticationFailed
 
 @api_view(["POST"])
 def signup_view(request):
@@ -44,6 +47,16 @@ def approve_user_view(request, user_id):
 
 def welcome_view():
     return Response({"message": "Welcome to AirFlow Pro API"})
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        if not self.user.is_approved:
+            raise AuthenticationFailed("Your account is pending admin appproval.")
+        return data
+
+class CustomLoginView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class SignUpView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
