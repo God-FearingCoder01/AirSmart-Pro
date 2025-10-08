@@ -10,6 +10,9 @@ from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
 from rest_framework import status
+from rest_framework import generics
+from .models import CustomUser
+from .serializers import UserSerializer
 
 @api_view(["POST"])
 def signup_view(request):
@@ -41,6 +44,10 @@ def approve_user_view(request, user_id):
 
 def welcome_view():
     return Response({"message": "Welcome to AirFlow Pro API"})
+
+class SignUpView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
 
 class DashboardStatsView(APIView):
     def get(self, request):
