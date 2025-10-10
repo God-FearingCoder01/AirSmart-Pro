@@ -14,7 +14,7 @@ from rest_framework import generics
 from .models import CustomUser
 from .serializers import UserSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-from res_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 
 @api_view(["POST"])
@@ -45,7 +45,8 @@ def approve_user_view(request, user_id):
     except User.DoesNotExit:
         return Response({"error": "User not found or already active"}, status=404)
 
-def welcome_view():
+@api_view(['GET'])
+def welcome_view(request):
     return Response({"message": "Welcome to AirFlow Pro API"})
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

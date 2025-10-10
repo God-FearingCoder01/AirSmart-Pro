@@ -27,6 +27,6 @@ urlpatterns = [
     path("health/", health_check_view),
 
     # JWT Authentication
-    path("api/token/", TokenObtainPaireView.as_view(), name="oken_obtain_pair"),
+    path("api/token/", TokenObtainPairView.as_view(), name="oken_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
