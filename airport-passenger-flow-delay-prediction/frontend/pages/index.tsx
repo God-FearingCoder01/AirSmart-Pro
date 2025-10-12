@@ -1,5 +1,6 @@
 import PassengerFlowChart from "../components/PassengerFlowChart";
 import DelayPredictionChart from "../components/DelayPredictionChart";
+import Icon from "../components/Icon";
 
 export default function Home({ passengerStats, flightStats, waitTime, delayStats, passengerFlowData, delayPredictionData, recentPredictions }) {
   return (
@@ -13,10 +14,10 @@ export default function Home({ passengerStats, flightStats, waitTime, delayStats
 
     {/* Stats Overview */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <DashboardCard title="Current Passengers" value={passengerStats.count} change="+12% from yesterday" icon="users" color="green" />
-      <DashboardCard title="Active Flights" value={flightStats.count} change={`On-time: ${flightStats.onTimePercent}%`} icon="plane" color="blue" />
-      <DashboardCard title="Avg. Wait Time" value={`${waitTime.value} min`} change={waitTime.change} icon="clock" color="yellow" />
-      <DashboardCard title="Delay Predictions" value={delayStats.count} change={delayStats.confidence} icon="alert-triangle" color="red" />
+      <DashboardCard title="Current Passengers" value={passengerStats.count} change="+12% from yesterday" icon="users" iconBg="bg-green-100" iconColor="text-green-600" />
+      <DashboardCard title="Active Flights" value={flightStats.count} change={`On-time: ${flightStats.onTimePercent}%`} icon="plane" iconBg="bg-blue-100" iconColor="text-blue-600" />
+      <DashboardCard title="Avg. Wait Time" value={`${waitTime.value} min`} change={waitTime.change} icon="clock" iconBg="bg-yellow-100" iconColor="text-yellow-600" />
+      <DashboardCard title="Delay Predictions" value={delayStats.count} change={delayStats.confidence} icon="alert-triangle" iconBg="bg-red-100" iconColor="text-red-600" />
     </div>
 
     {/* Charts Section */}
@@ -42,18 +43,18 @@ export default function Home({ passengerStats, flightStats, waitTime, delayStats
 }
 
 // Example DashboardCard component
-function DashboardCard({ title, value, change, icon, color }) {
+function DashboardCard({ title, value, change, icon, iconBg, iconColor }) {
   return (
     <div className="dashboard-card bg-white rounded-xl p-6 shadow flex justify-between items-start">
       <div>
         <p className="text-gray-500 text-sm">{title}</p>
         <h3 className="text-3xl font-bold text-gray-800 mt-2">{value}</h3>
-        <p className={`text-${color}-500 text-sm mt-1`}>{change}</p>
+        <p className={`${iconColor.replace('text-', 'text-')} text-sm mt-1`}>{change}</p>
       </div>
-      <div className={`bg-${color}-100 p-3 rounded-lg flex items-center justify-center`} style={{ width: 48, height: 48 }}>
-        <img src={`../components/${icon}.ico`} alt="" />
-        <span className={`text-${color}-600 text-2xl`}>{icon}</span>
-      </div>
+          {/* Icon background color */}
+          <div className={`p-3 rounded-lg flex items-center justify-center ${iconBg}`} style={{ width: 48, height: 48 }}>
+            <Icon name={icon} className={iconColor} />
+          </div>
     </div>
   );
 }
@@ -118,6 +119,25 @@ export async function getServerSideProps() {
     const { passengerStats, flightStats, waitTime, delayStats, recentPredictions } =
       passengerStatsData;
 
+    // Helper to replace `undefined` with `null` recursively so Next.js can serialize the props
+    const sanitizeForSSR = (value) => {
+      if (value === undefined) return null;
+      if (value === null) return null;
+      if (Array.isArray(value)) return value.map(sanitizeForSSR);
+      if (typeof value === "object") {
+        const out = {};
+        for (const k in value) {
+          if (Object.prototype.hasOwnProperty.call(value, k)) {
+            const v = value[k];
+            out[k] = v === undefined ? null : sanitizeForSSR(v);
+          }
+        }
+        return out;
+      }
+      // primitives (string, number, boolean)
+      return value;
+    };
+
     return {
       props: {
         passengerFlowData: Array.isArray(passengerFlowDataRaw)
@@ -126,12 +146,12 @@ export async function getServerSideProps() {
         delayPredictionData: Array.isArray(delayPredictionData)
           ? delayPredictionData
           : [],
-        passengerStats,
-        flightStats,
-        waitTime,
-        delayStats,
+        passengerStats: sanitizeForSSR(passengerStats ?? { count: 0 }),
+        flightStats: sanitizeForSSR(flightStats ?? { count: 0, onTimePercent: 0 }),
+        waitTime: sanitizeForSSR(waitTime ?? { value: 0, change: "" }),
+        delayStats: sanitizeForSSR(delayStats ?? { count: 0, confidence: "" }),
         recentPredictions: Array.isArray(recentPredictions)
-          ? recentPredictions
+          ? recentPredictions.map(sanitizeForSSR)
           : [],
       },
     };

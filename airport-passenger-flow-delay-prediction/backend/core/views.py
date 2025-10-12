@@ -16,6 +16,7 @@ from .serializers import UserSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.permissions import AllowAny
 
 @api_view(["POST"])
 def signup_view(request):
@@ -46,6 +47,7 @@ def approve_user_view(request, user_id):
         return Response({"error": "User not found or already active"}, status=404)
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def welcome_view(request):
     return Response({"message": "Welcome to AirFlow Pro API"})
 
@@ -58,12 +60,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class CustomLoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    permission_classes = [AllowAny]
 
 class SignUpView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
 class DashboardStatsView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         # Dummy data for now; to be replaced with real DB queries and calculations
         passengerStats = {"count": 1248}
@@ -79,6 +84,7 @@ class DashboardStatsView(APIView):
         })
 
 class FlightDelayPredictionView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         try:
             # Load preprocessor and model
@@ -124,6 +130,7 @@ class FlightDelayPredictionView(APIView):
             return Response({"error": str(e)}, status=500)
 
 class PassengerFlowView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         try:
             # -------------------
