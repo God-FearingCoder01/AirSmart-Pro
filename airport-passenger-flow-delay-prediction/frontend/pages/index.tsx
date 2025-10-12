@@ -2,44 +2,12 @@ import PassengerFlowChart from "../components/PassengerFlowChart";
 import DelayPredictionChart from "../components/DelayPredictionChart";
 import Icon from "../components/Icon";
 
-export default function Home({ passengerStats, flightStats, waitTime, delayStats, passengerFlowData, delayPredictionData, recentPredictions }) {
-  return (
-    <>
-    {/* Dashboard Header */}
-    <div className="mb-8">
-      {/* <img src="/ACZ_Logo.ico" alt="Airport Logo" /> */}
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">Airport Dashboard</h2>
-      <p className="text-gray-600">Real-time passenger flow and flight delay predictions</p>
-    </div>
-
-    {/* Stats Overview */}
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <DashboardCard title="Current Passengers" value={passengerStats.count} change="+12% from yesterday" icon="users" iconBg="bg-green-100" iconColor="text-green-600" />
-      <DashboardCard title="Active Flights" value={flightStats.count} change={`On-time: ${flightStats.onTimePercent}%`} icon="plane" iconBg="bg-blue-100" iconColor="text-blue-600" />
-      <DashboardCard title="Avg. Wait Time" value={`${waitTime.value} min`} change={waitTime.change} icon="clock" iconBg="bg-yellow-100" iconColor="text-yellow-600" />
-      <DashboardCard title="Delay Predictions" value={delayStats.count} change={delayStats.confidence} icon="alert-triangle" iconBg="bg-red-100" iconColor="text-red-600" />
-    </div>
-
-    {/* Charts Section */}
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      <div className="dashboard-card bg-white rounded-xl p-6 shadow">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6">Passenger Flow Prediction</h3>
-        <div className="h-80">
-          <PassengerFlowChart data={passengerFlowData} />
-        </div>
-      </div>
-      <div className="dashboard-card bg-white rounded-xl p-6 shadow">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6">Flight Delay Predictions</h3>
-        <div className="h-80">
-          <DelayPredictionChart data={delayPredictionData} />
-        </div>
-      </div>
-    </div>
-
-    {/* Recent Predictions Table */}
-    <RecentPredictionsTable predictions={recentPredictions} />
-    </>
-  );
+// Redirect root to login page. The full dashboard component was here previously but
+// we redirect users to `/login` on page load so they sign in first.
+export default function Home() {
+  // This component won't be rendered because getServerSideProps performs a redirect,
+  // but we keep a minimal placeholder to satisfy Next.js page exports.
+  return null;
 }
 
 // Example DashboardCard component
@@ -96,77 +64,10 @@ function RecentPredictionsTable({ predictions }) {
 
 
 export async function getServerSideProps() {
-  try {
-    const [passengerRes, delayRes, statsRes] = await Promise.all([
-      fetch("http://localhost:8000/api/passenger-flow/", {
-        headers: { Accept: "application/json" },
-      }),
-      fetch("http://localhost:8000/api/delay-predictions/", {
-        headers: { Accept: "application/json" },
-      }),
-      fetch("http://localhost:8000/api/dashboard-stats/", {
-        headers: { Accept: "application/json" },
-      }),
-    ]);
-
-    const [passengerFlowDataRaw, delayPredictionData, passengerStatsData] =
-      await Promise.all([
-        passengerRes.json(),
-        delayRes.json(),
-        statsRes.json(),
-      ]);
-
-    const { passengerStats, flightStats, waitTime, delayStats, recentPredictions } =
-      passengerStatsData;
-
-    // Helper to replace `undefined` with `null` recursively so Next.js can serialize the props
-    const sanitizeForSSR = (value) => {
-      if (value === undefined) return null;
-      if (value === null) return null;
-      if (Array.isArray(value)) return value.map(sanitizeForSSR);
-      if (typeof value === "object") {
-        const out = {};
-        for (const k in value) {
-          if (Object.prototype.hasOwnProperty.call(value, k)) {
-            const v = value[k];
-            out[k] = v === undefined ? null : sanitizeForSSR(v);
-          }
-        }
-        return out;
-      }
-      // primitives (string, number, boolean)
-      return value;
-    };
-
-    return {
-      props: {
-        passengerFlowData: Array.isArray(passengerFlowDataRaw)
-          ? passengerFlowDataRaw
-          : [], // ✅ guarantee array
-        delayPredictionData: Array.isArray(delayPredictionData)
-          ? delayPredictionData
-          : [],
-        passengerStats: sanitizeForSSR(passengerStats ?? { count: 0 }),
-        flightStats: sanitizeForSSR(flightStats ?? { count: 0, onTimePercent: 0 }),
-        waitTime: sanitizeForSSR(waitTime ?? { value: 0, change: "" }),
-        delayStats: sanitizeForSSR(delayStats ?? { count: 0, confidence: "" }),
-        recentPredictions: Array.isArray(recentPredictions)
-          ? recentPredictions.map(sanitizeForSSR)
-          : [],
-      },
-    };
-  } catch (err) {
-    console.error("Error in getServerSideProps:", err);
-    return {
-      props: {
-        passengerFlowData: [],
-        delayPredictionData: [],
-        passengerStats: { count: 0 },
-        flightStats: { count: 0, onTimePercent: 0 },
-        waitTime: { value: 0, change: "" },
-        delayStats: { count: 0, confidence: "" },
-        recentPredictions: [],
-      },
-    };
-  }
+  return {
+    redirect: {
+      destination: '/login',
+      permanent: false,
+    },
+  };
 }
