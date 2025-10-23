@@ -1,151 +1,129 @@
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import PassengerFlowChart from "../components/PassengerFlowChart";
 import DelayPredictionChart from "../components/DelayPredictionChart";
+import Icon from "../components/Icon";
 
-export default function Home({ passengerStats, flightStats, waitTime, delayStats, passengerFlowData, delayPredictionData, recentPredictions }) {
+export default function Home({ passengerStats, flightStats, waitTime, delayStats }) {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is authenticated (has token)
+    const token = localStorage.getItem('access') || sessionStorage.getItem('access');
+    if (!token) {
+      router.push('/login');
+    } else {
+      setIsAuthenticated(true);
+    }
+    setIsLoading(false);
+  }, [router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <>
-    {/* Dashboard Header */}
-    <div className="mb-8">
-      {/* <img src="/ACZ_Logo.ico" alt="Airport Logo" /> */}
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">Airport Dashboard</h2>
-      <p className="text-gray-600">Real-time passenger flow and flight delay predictions</p>
-    </div>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard Overview</h1>
 
-    {/* Stats Overview */}
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <DashboardCard title="Current Passengers" value={passengerStats.count} change="+12% from yesterday" icon="users" color="green" />
-      <DashboardCard title="Active Flights" value={flightStats.count} change={`On-time: ${flightStats.onTimePercent}%`} icon="plane" color="blue" />
-      <DashboardCard title="Avg. Wait Time" value={`${waitTime.value} min`} change={waitTime.change} icon="clock" color="yellow" />
-      <DashboardCard title="Delay Predictions" value={delayStats.count} change={delayStats.confidence} icon="alert-triangle" color="red" />
-    </div>
-
-    {/* Charts Section */}
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      <div className="dashboard-card bg-white rounded-xl p-6 shadow">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6">Passenger Flow Prediction</h3>
-        <div className="h-80">
-          <PassengerFlowChart data={passengerFlowData} />
-        </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <DashboardCard
+          title="Total Passengers"
+          value={passengerStats?.count || 0}
+          change="+12% from last week"
+          icon="users"
+          iconBg="bg-blue-100"
+          iconColor="text-blue-600"
+        />
+        <DashboardCard
+          title="Flights Today"
+          value={flightStats?.count || 0}
+          change={`${flightStats?.onTimePercent || 0}% on-time`}
+          icon="plane"
+          iconBg="bg-green-100"
+          iconColor="text-green-600"
+        />
+        <DashboardCard
+          title="Avg Wait Time"
+          value={`${waitTime?.value || 0} min`}
+          change={waitTime?.change || "No change"}
+          icon="clock"
+          iconBg="bg-yellow-100"
+          iconColor="text-yellow-600"
+        />
+        <DashboardCard
+          title="Predicted Delays"
+          value={delayStats?.count || 0}
+          change={delayStats?.confidence || "N/A"}
+          icon="alert-triangle"
+          iconBg="bg-red-100"
+          iconColor="text-red-600"
+        />
       </div>
-      <div className="dashboard-card bg-white rounded-xl p-6 shadow">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6">Flight Delay Predictions</h3>
-        <div className="h-80">
-          <DelayPredictionChart data={delayPredictionData} />
-        </div>
-      </div>
-    </div>
 
-    {/* Recent Predictions Table */}
-    <RecentPredictionsTable predictions={recentPredictions} />
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <PassengerFlowChart data={[]} />
+        <DelayPredictionChart data={[]} />
+      </div>
     </>
   );
 }
 
 // Example DashboardCard component
-function DashboardCard({ title, value, change, icon, color }) {
+function DashboardCard({ title, value, change, icon, iconBg, iconColor }) {
   return (
     <div className="dashboard-card bg-white rounded-xl p-6 shadow flex justify-between items-start">
       <div>
         <p className="text-gray-500 text-sm">{title}</p>
         <h3 className="text-3xl font-bold text-gray-800 mt-2">{value}</h3>
-        <p className={`text-${color}-500 text-sm mt-1`}>{change}</p>
+        <p className={`${iconColor} text-sm mt-1`}>{change}</p>
       </div>
-      <div className={`bg-${color}-100 p-3 rounded-lg flex items-center justify-center`} style={{ width: 48, height: 48 }}>
-        <img src={`../components/${icon}.ico`} alt="" />
-        <span className={`text-${color}-600 text-2xl`}>{icon}</span>
-      </div>
-    </div>
-  );
-}
-
-// Example RecentPredictionsTable component
-function RecentPredictionsTable({ predictions }) {
-  return (
-    <div className="dashboard-card bg-white rounded-xl p-6 shadow mb-8">
-      <h3 className="text-lg font-semibold text-gray-800 mb-6">Recent Predictions</h3>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead>
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Flight</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destination</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Predicted Delay</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confidence</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {predictions.map((p, i) => (
-              <tr key={i}>
-                <td className="px-6 py-4 whitespace-nowrap">{p.flight}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{p.destination}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{p.scheduled}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{p.predictedDelay}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{p.confidence}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{p.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Icon background color */}
+      <div className={`p-3 rounded-lg flex items-center justify-center ${iconBg}`} style={{ width: 48, height: 48 }}>
+        <Icon name={icon} className={iconColor} />
       </div>
     </div>
   );
 }
-
 
 export async function getServerSideProps() {
+  // Fetch dashboard data from the backend
   try {
-    const [passengerRes, delayRes, statsRes] = await Promise.all([
-      fetch("http://localhost:8000/api/passenger-flow/", {
-        headers: { Accept: "application/json" },
-      }),
-      fetch("http://localhost:8000/api/delay-predictions/", {
-        headers: { Accept: "application/json" },
-      }),
-      fetch("http://localhost:8000/api/dashboard-stats/", {
-        headers: { Accept: "application/json" },
-      }),
-    ]);
-
-    const [passengerFlowDataRaw, delayPredictionData, passengerStatsData] =
-      await Promise.all([
-        passengerRes.json(),
-        delayRes.json(),
-        statsRes.json(),
-      ]);
-
-    const { passengerStats, flightStats, waitTime, delayStats, recentPredictions } =
-      passengerStatsData;
-
+    const API = process.env.API_URL || 'http://localhost:8000/api';
+    const res = await fetch(`${API}/dashboard-stats/`);
+    const data = await res.json();
+    
     return {
       props: {
-        passengerFlowData: Array.isArray(passengerFlowDataRaw)
-          ? passengerFlowDataRaw
-          : [], // ✅ guarantee array
-        delayPredictionData: Array.isArray(delayPredictionData)
-          ? delayPredictionData
-          : [],
-        passengerStats,
-        flightStats,
-        waitTime,
-        delayStats,
-        recentPredictions: Array.isArray(recentPredictions)
-          ? recentPredictions
-          : [],
+        passengerStats: data.passengerStats || {},
+        flightStats: data.flightStats || {},
+        waitTime: data.waitTime || {},
+        delayStats: data.delayStats || {},
       },
     };
-  } catch (err) {
-    console.error("Error in getServerSideProps:", err);
+  } catch (error) {
+    console.error('Failed to fetch dashboard stats:', error);
     return {
       props: {
-        passengerFlowData: [],
-        delayPredictionData: [],
-        passengerStats: { count: 0 },
-        flightStats: { count: 0, onTimePercent: 0 },
-        waitTime: { value: 0, change: "" },
-        delayStats: { count: 0, confidence: "" },
-        recentPredictions: [],
+        passengerStats: {},
+        flightStats: {},
+        waitTime: {},
+        delayStats: {},
       },
     };
   }
