@@ -149,7 +149,15 @@ class PassengerFlowView(APIView):
             # -------------------
             # Fetch data from DB
             # -------------------
-            engine = create_engine('mysql+pymysql://root:Oneafternoon1*@localhost:3306/airport_db')
+            # Build DB URL from environment for deployment (e.g., Railway MySQL)
+            db_host = os.getenv('MYSQLHOST', os.getenv('DB_HOST', 'localhost'))
+            db_port = os.getenv('MYSQLPORT', os.getenv('DB_PORT', '3306'))
+            db_name = os.getenv('MYSQLDATABASE', os.getenv('DB_NAME', 'airport_db'))
+            db_user = os.getenv('MYSQLUSER', os.getenv('DB_USER', 'root'))
+            db_password = os.getenv('MYSQLPASSWORD', os.getenv('DB_PASSWORD', ''))
+
+            engine_url = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+            engine = create_engine(engine_url)
 
             query = """
                 SELECT record_id, passenger_count, terminal, timestamp

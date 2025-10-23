@@ -1,17 +1,29 @@
 import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+MYSQL_HOST = os.getenv('MYSQLHOST', os.getenv('DB_HOST', 'localhost'))
+MYSQL_PORT = os.getenv('MYSQLPORT', os.getenv('DB_PORT', '3306'))
+MYSQL_NAME = os.getenv('MYSQLDATABASE', os.getenv('DB_NAME', 'airport_db'))
+MYSQL_USER = os.getenv('MYSQLUSER', os.getenv('DB_USER', 'root'))
+MYSQL_PASSWORD = os.getenv('MYSQLPASSWORD', os.getenv('DB_PASSWORD', ''))
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',  # Use 'django.db.backends.mysql' for MySQL
-        'NAME': 'airport_db',
-        'USER': 'root',
-        'PASSWORD': 'Oneafternoon1*',
-        'HOST': 'localhost',
-        'PORT': '3306',  # Default port for PostgreSQL, change to '3306' for MySQL
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': MYSQL_NAME,
+        'USER': MYSQL_USER,
+        'PASSWORD': MYSQL_PASSWORD,
+        'HOST': MYSQL_HOST,
+        'PORT': MYSQL_PORT,
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
-ALLOWED_HOSTS = ['*'] # Adjust as needed for production
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -29,6 +41,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -94,18 +107,31 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for CORS, adjust as needed for production
-
+FRONTEND_URL = os.getenv('FRONTEND_URL')
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React frontend
-    "http://192.168.1.69:3000",  # React frontend
+    FRONTEND_URL,
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
+if not FRONTEND_URL:
+    # Filter out None entries
+    CORS_ALLOWED_ORIGINS = [o for o in CORS_ALLOWED_ORIGINS if o]
 
-DEBUG = True  # Set to False in production
+CSRF_TRUSTED_ORIGINS = [
+    os.getenv('CSRF_TRUSTED_ORIGIN', ''),
+]
+CSRF_TRUSTED_ORIGINS = [o for o in CSRF_TRUSTED_ORIGINS if o]
+
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 SECRET_KEY = os.getenv("SECRET_KEY", "qna*2_t$q)$*kj749upwngja6h@nxb2vh35+)7hzp9&#ez")
 if not SECRET_KEY:
     raise ValueError("The SECRET_KEY environment variable is not set.")
+
+# If behind a proxy (Railway), ensure SSL header recognized
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

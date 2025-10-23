@@ -1,5 +1,12 @@
 Django==4.2
 djangorestframework==3.14.0
+djangorestframework-simplejwt
+django-cors-headers
+mysqlclient
+pymysql
+SQLAlchemy
+gunicorn
+whitenoise
 pandas==1.5.3
 numpy==1.24.2
 scikit-learn==1.2.2
