@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api'; // Adjust the base URL as needed
+const API_BASE_URL = process.env.API_URL || '/api'; // Use Next rewrite in browser or absolute in SSR
 
 export const fetchPassengerFlow = async () => {
     try {
