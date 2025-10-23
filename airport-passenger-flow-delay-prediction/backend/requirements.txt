@@ -2,7 +2,7 @@ Django==4.2
 djangorestframework==3.14.0
 djangorestframework-simplejwt
 django-cors-headers
-mysqlclient
+# mysqlclient  # optional native driver; omitted for portability on Railway
 pymysql
 SQLAlchemy
 gunicorn
@@ -11,5 +11,5 @@ pandas==1.5.3
 numpy==1.24.2
 scikit-learn==1.2.2
 joblib==1.2.0
-prophet==1.1.1
+# prophet==1.1.1  # comment out to avoid heavy build on free tiers; re-enable if needed
 xgboost==1.7.5

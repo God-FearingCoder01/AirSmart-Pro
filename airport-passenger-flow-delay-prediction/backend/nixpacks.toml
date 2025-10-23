@@ -1,0 +1,16 @@
+[phases.setup]
+# Ensure Python is available; add build tools if needed
+nixpkgs = ["python311"]
+
+[phases.install]
+cmds = [
+  "pip install --upgrade pip",
+  "pip install -r requirements.txt",
+]
+
+# Keep build phase minimal to avoid DB dependency during build
+[phases.build]
+cmds = []
+
+[start]
+cmd = "gunicorn airport_api.wsgi:application --bind 0.0.0.0:$PORT --log-file -"
